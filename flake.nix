@@ -53,8 +53,7 @@
 
             echo "beep boop from $PWD"
             ### for project-specific Kubernetes configuration files.
-            export KUBECONFIG="$(pwd)/talhelper/clusterconfig/kubeconfig"
-            export TALOSCONFIG="$(pwd)/talhelper/clusterconfig/talosconfig"
+            export KUBECONFIG="$(pwd)/kubeconfig"
           '';
 
           # The Nix packages provided in the environment
