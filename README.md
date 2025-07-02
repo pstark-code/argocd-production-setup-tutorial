@@ -32,11 +32,56 @@ Ein Beispiel um schnell in die Gänge zu kommen findet ihr im Ordner [01-beispie
 
 ## Details Etappe 2 - 
 
-- GitOps-basierte Deployments mit ArgoCD
-- Verschiedene Namespaces für die verschiedenen Teams (Vielleicht auch mehrere Namespaces pro Team?)
-- Separate Git repositories für das "Operations"-Team und für die verschiedenen Entwickler-Teams
-- Separate Zugriffskontrollen und Sichten auf den Cluster
-- Mindestens zwei Entwickler-Teams
-- Mindestens ein Operations Team
-- mind. eine Applikation pro Entwickler-Team per ArgoCD deployed
+### Die involvierten Parteien:
+
+- Operations-Team "Ops"
+  - Das sind wir
+- Entwickler-Team "Gophers"
+- Entwickler-Team "Pythonistas"
+
+**"Ops"**
+
+Als Operations Team haben wir vollen Zugriff auf den Cluster, mit allen Vor- und Nachteilen die das mit sich bringt.
+
+Die Schattenseite des Zugriffs wollen wir etwas ausgleichen indem wir möglichst viel von der Clusterinfrastruktur auch per ArgoCD ausrollen, damit wir nur im äussersten Notfall Hand anlegen müssen. 
+
+**Gophers und Pythonistas** 
+
+Die zwei Teams entwicklen Software, die auf Kubernetes deployed werden soll. Sie kennen Kubernetes gut genug, dass sie ihre Helm charts warten können. 
+
+Aber sie sollten keinen Admin-Zugriff haben, damit allfällige Fehler nicht zu Fehlern an der Infrastruktur führen können.
+
+### Namespaces
+
+Es kann sich lohnen, Namespaces mit Präfixen oder Suffixen zu versehen, damit sie in ArgoCD gematcht und der Zugriff entsprechend gesteuert werden kann.
+
+
+### Eine Basis für das ArgoCD Git Repository:
+
+Um ein "App-of-Apps" pattern aufzuziehen, benötigt es immer irgendwo eine Basis, die anfänglich "von Hand" eingepflegt werden muss. Bei Puzzle sieht das etwa so aus:
+
+```yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: production-cluster-argo-apps
+  namespace: argocd
+spec:
+  destination:
+    namespace: kube-system
+    name: in-cluster
+  project: pitc-sys
+  source:
+    helm:
+      valueFiles:
+      - "production-cluster-values.yaml"
+    path: .
+    repoURL: https://gitlab.puzzle.ch/abteilung/gruppe/production/argo-apps.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      selfHeal: true
+```
+
 
